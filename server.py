@@ -11,8 +11,10 @@ PORT = 8000
 OLLAMA = "http://127.0.0.1:11434/api/chat"
 MODEL = "obie-ai"
 
-BASE_DIR = os.path.expanduser("~/ObieAI/app")
-DB_PATH = os.path.join(BASE_DIR, "obie_memory.db")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+APP_DATA_DIR = os.path.expanduser("~/Library/Application Support/OBIE AI")
+os.makedirs(APP_DATA_DIR, exist_ok=True)
+DB_PATH = os.path.join(APP_DATA_DIR, "obie_memory.db")
 
 
 SYSTEM_PROMPT = """You are OBIE AI, a personal AI assistant running locally on the user's Mac through Ollama.
@@ -229,7 +231,22 @@ def detect_memory_request(text):
         "going forward",
     ]
 
-    return any(trigger in lower for trigger in triggers)
+    if any(trigger in lower for trigger in triggers):
+        return True
+
+    # Natural personal facts that are useful long-term.
+    personal_patterns = [
+        r"^my\s+favourite\s+.+\s+is\s+.+$",
+        r"^my\s+favorite\s+.+\s+is\s+.+$",
+        r"^my\s+name\s+is\s+.+$",
+        r"^i\s+(?:am|'m)\s+.+$",
+        r"^i\s+live\s+in\s+.+$",
+    ]
+
+    return any(
+        re.match(pattern, lower, re.IGNORECASE)
+        for pattern in personal_patterns
+    )
 
 
 def extract_memory(text):
@@ -246,6 +263,11 @@ def extract_memory(text):
         r"keep in mind\s+(.+)",
         r"from now on[,\s]+(.+)",
         r"going forward[,\s]+(.+)",
+        r"^(my\s+favourite\s+.+\s+is\s+.+)$",
+        r"^(my\s+favorite\s+.+\s+is\s+.+)$",
+        r"^(my\s+name\s+is\s+.+)$",
+        r"^(i\s+(?:am|'m)\s+.+)$",
+        r"^(i\s+live\s+in\s+.+)$",
     ]
 
     for pattern in patterns:
