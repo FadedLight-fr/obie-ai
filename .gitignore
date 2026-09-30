@@ -1,0 +1,6 @@
+obie_memory.db
+*.backup.py
+*.before-*.py
+*.backup.html
+*.before-*.html
+.DS_Store

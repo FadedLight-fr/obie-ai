@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#09090b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.json">
 <title>OBIE AI</title>
 <meta name="obie-version" content="1.0.4">
 <style>
@@ -432,7 +437,8 @@ async function send(){
 
     const text=decoder.decode(value,{stream:true});
 
-    for(const line of text.split("\n")){
+    for(const line of text.split("
+")){
       if(!line.trim()) continue;
 
       try{
@@ -557,7 +563,7 @@ function showUpdateNotice(update) {
             border-radius:16px;
             box-shadow:0 15px 50px rgba(0,0,0,.45);
             z-index:9999;
-            font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;
+            font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;
         ">
             <div style="font-size:16px;font-weight:700;margin-bottom:6px">
                 OBIE AI update available
@@ -567,18 +573,31 @@ function showUpdateNotice(update) {
                 Version ${update.version} is available.
             </div>
 
-            <button onclick="this.parentElement.parentElement.remove()" style="
-                width:100%;
-                padding:10px;
-                border:0;
-                border-radius:10px;
-                background:#fff;
-                color:#000;
-                font-weight:700;
-                cursor:pointer;
-            ">
-                Update later
-            </button>
+            <div style="display:flex;gap:8px">
+                <button onclick="window.open(update.download, "_blank")" style="
+                    flex:1;
+                    padding:10px;
+                    border:0;
+                    border-radius:10px;
+                    background:#fff;
+                    color:#000;
+                    font-weight:700;
+                    cursor:pointer;
+                ">
+                    Download update
+                </button>
+
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
+                    padding:10px 12px;
+                    border:1px solid #38383f;
+                    border-radius:10px;
+                    background:#222228;
+                    color:#fff;
+                    cursor:pointer;
+                ">
+                    Later
+                </button>
+            </div>
         </div>
     `;
 
@@ -712,5 +731,26 @@ async function checkSetup() {
 checkSetup();
 </script>
 
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").then(reg => {
+      reg.update();
+      reg.addEventListener("updatefound", () => {
+        const worker = reg.installing;
+        if (worker) {
+          worker.addEventListener("statechange", () => {
+            if (worker.state === "installed" && navigator.serviceWorker.controller) {
+              if (confirm("A new OBIE AI update is ready. Reload now?")) {
+                window.location.reload();
+              }
+            }
+          });
+        }
+      });
+    }).catch(console.error);
+  });
+}
+</script>
 </body>
 </html>
