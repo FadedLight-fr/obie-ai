@@ -529,6 +529,49 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
 
+        if self.path == "/api/status":
+            try:
+                req = urllib.request.Request(
+                    "http://127.0.0.1:11434/api/tags",
+                    method="GET"
+                )
+                with urllib.request.urlopen(req, timeout=3) as response:
+                    data = json.loads(response.read().decode())
+
+                models = [m.get("name", "") for m in data.get("models", [])]
+                ollama_ok = True
+                model_ok = any(
+                    name == MODEL or name.startswith(MODEL + ":")
+                    for name in models
+                )
+
+                output = json.dumps({
+                    "ollama": ollama_ok,
+                    "model": MODEL,
+                    "model_ready": model_ok
+                }).encode()
+
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(output)))
+                self.end_headers()
+                self.wfile.write(output)
+
+            except Exception:
+                output = json.dumps({
+                    "ollama": False,
+                    "model": MODEL,
+                    "model_ready": False
+                }).encode()
+
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(output)))
+                self.end_headers()
+                self.wfile.write(output)
+
+            return
+
         if self.path == "/api/memories":
 
             memories = get_memories()
