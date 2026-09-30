@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OBIE AI</title>
+<meta name="obie-version" content="1.0.0">
+<style>
+*{box-sizing:border-box}
+
+:root{
+  --bg:#09090b;
+  --panel:#111114;
+  --panel2:#17171b;
+  --border:#29292f;
+  --text:#f5f5f7;
+  --muted:#8b8b95;
+  --accent:#ffffff;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",sans-serif;
+  height:100vh;
+  display:flex;
+  overflow:hidden;
+}
+
+#side{
+  width:250px;
+  background:linear-gradient(180deg,#111114,#0d0d10);
+  border-right:1px solid var(--border);
+  padding:20px 16px;
+  display:flex;
+  flex-direction:column;
+}
+
+.logo{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:-.6px;
+  margin:4px 8px 28px;
+}
+
+.logo::after{
+  content:"";
+  display:inline-block;
+  width:7px;
+  height:7px;
+  margin-left:6px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 0 12px rgba(255,255,255,.7);
+}
+
+.sidebtn{
+  background:transparent;
+  border:1px solid transparent;
+  color:#d8d8dd;
+  border-radius:11px;
+  padding:11px 13px;
+  margin-bottom:7px;
+  text-align:left;
+  cursor:pointer;
+  font-size:14px;
+  transition:.18s ease;
+}
+
+.sidebtn:hover{
+  background:#1b1b20;
+  border-color:#29292f;
+  color:#fff;
+  transform:translateX(2px);
+}
+
+#main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  background:
+    radial-gradient(circle at 50% -20%,rgba(255,255,255,.045),transparent 35%),
+    var(--bg);
+}
+
+header{
+  height:65px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding:0 25px;
+  font-size:16px;
+  font-weight:700;
+  letter-spacing:-.2px;
+  background:rgba(9,9,11,.78);
+  backdrop-filter:blur(18px);
+}
+
+header::after{
+  content:"LOCAL";
+  font-size:10px;
+  letter-spacing:1.2px;
+  color:#777780;
+  margin-left:10px;
+  padding:4px 7px;
+  border:1px solid #29292f;
+  border-radius:6px;
+}
+
+#chat{
+  flex:1;
+  overflow:auto;
+  padding:35px 20px;
+  scroll-behavior:smooth;
+}
+
+#chat::-webkit-scrollbar{
+  width:7px;
+}
+
+#chat::-webkit-scrollbar-thumb{
+  background:#29292f;
+  border-radius:10px;
+}
+
+.msg{
+  max-width:800px;
+  margin:0 auto 22px;
+  padding:16px 20px;
+  border-radius:18px;
+  line-height:1.6;
+  white-space:pre-wrap;
+  animation:messageIn .2s ease-out;
+}
+
+@keyframes messageIn{
+  from{opacity:0;transform:translateY(5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.user{
+  background:#29292f;
+  border:1px solid #34343b;
+}
+
+.ai{
+  background:#151518;
+  border:1px solid #222228;
+}
+
+#bar{
+  display:flex;
+  max-width:850px;
+  width:calc(100% - 40px);
+  margin:0 auto 22px;
+  gap:10px;
+  padding:5px;
+  background:#151518;
+  border:1px solid #303038;
+  border-radius:20px;
+  box-shadow:0 10px 35px rgba(0,0,0,.25);
+}
+
+textarea{
+  flex:1;
+  background:transparent;
+  color:#fff;
+  border:0;
+  border-radius:15px;
+  padding:12px 13px;
+  font-size:16px;
+  resize:none;
+  outline:none;
+  font-family:inherit;
+}
+
+textarea::placeholder{
+  color:#66666f;
+}
+
+textarea:focus{
+  outline:none;
+}
+
+#bar button{
+  background:#fff;
+  color:#000;
+  border:0;
+  border-radius:15px;
+  padding:0 20px;
+  font-weight:700;
+  font-size:14px;
+  cursor:pointer;
+  transition:.18s ease;
+}
+
+#bar button:hover{
+  transform:scale(1.03);
+  box-shadow:0 0 20px rgba(255,255,255,.12);
+}
+
+#memory{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(10px);
+  align-items:center;
+  justify-content:center;
+}
+
+.panel{
+  width:min(600px,90%);
+  background:#151518;
+  border:1px solid #303038;
+  border-radius:22px;
+  padding:25px;
+  box-shadow:0 25px 80px rgba(0,0,0,.5);
+}
+
+.panel h2{
+  margin-top:0;
+}
+
+#memoryText{
+  width:100%;
+  height:250px;
+  background:#0c0c0f;
+  color:#fff;
+  border:1px solid #33333a;
+  border-radius:12px;
+  padding:15px;
+  resize:none;
+  outline:none;
+  font-family:inherit;
+}
+
+.close{
+  margin-top:15px;
+  background:#fff;
+  color:#000;
+  border:0;
+  border-radius:12px;
+  padding:10px 15px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.thinking-wheel{
+  display:inline-block;
+  width:22px;
+  height:22px;
+  border:3px solid rgba(255,255,255,.14);
+  border-top-color:#fff;
+  border-right-color:#fff;
+  border-radius:50%;
+  vertical-align:middle;
+  margin-right:9px;
+  animation:skateboardWheelSpin .65s linear infinite;
+  box-sizing:border-box;
+  position:relative;
+}
+
+.thinking-wheel::after{
+  content:"";
+  position:absolute;
+  width:5px;
+  height:5px;
+  background:#fff;
+  border-radius:50%;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+}
+
+@keyframes skateboardWheelSpin{
+  from{transform:rotate(0deg)}
+  to{transform:rotate(360deg)}
+}
+
+@media(max-width:700px){
+  #side{display:none}
+  #chat{padding:20px 12px}
+  #bar{width:calc(100% - 20px)}
+}
+</style>
+
+<style>
+.thinking-wheel {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(255,255,255,.18);
+  border-top-color: #ffffff;
+  border-right-color: #ffffff;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 9px;
+  animation: skateboardWheelSpin .65s linear infinite;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.thinking-wheel::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #ffffff;
+  border-radius: 50%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes skateboardWheelSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>
+
+</head>
+
+<body>
+
+<aside id="side">
+<div class="logo">OBIE AI</div>
+<button class="sidebtn" onclick="newChat()">＋ New chat</button>
+<button class="sidebtn" onclick="openMemory()">🧠 Memory</button>
+<button class="sidebtn" onclick="clearChat()">🗑 Clear chat</button>
+</aside>
+
+<main id="main">
+<header>OBIE AI</header>
+
+<div id="chat"></div>
+
+<div id="bar">
+<textarea id="input" rows="2" placeholder="Message OBIE AI..."></textarea>
+<button onclick="send()">Send</button>
+</div>
+</main>
+
+<div id="memory">
+<div class="panel">
+<h2>OBIE AI Memory</h2>
+<p>Anything written here is saved locally in this browser and included when OBIE AI responds.</p>
+<textarea id="memoryText" placeholder="Example:
+My name is Obie.
+I am building my own AI.
+I like direct answers.
+I want OBIE AI to help me build software."></textarea>
+<br>
+<button class="close" onclick="saveMemory()">Save memory</button>
+<button class="close" onclick="closeMemory()">Close</button>
+</div>
+</div>
+
+<script>
+const SYSTEM=`You are OBIE AI, a personal AI assistant running locally on the user's Mac through Ollama.
+
+You are a local AI. You are not ChatGPT and you are not a cloud-based assistant.
+
+Be direct, practical and useful. Help the user with coding, software, learning, research, writing, troubleshooting, creative work and problem solving.
+
+Always answer in English.`;
+
+let history=JSON.parse(localStorage.getItem("obie_history")||"[]");
+let memory=localStorage.getItem("obie_memory")||"";
+
+function render(){
+ const chat=document.getElementById("chat");
+ chat.innerHTML="";
+ if(history.length===0){
+  addMessage("ai","I'm OBIE AI. What are we building?");
+  return;
+ }
+ for(const m of history){
+  addMessage(m.role==="user"?"user":"ai",m.content);
+ }
+}
+
+function addMessage(type,text){
+ const box=document.createElement("div");
+ box.className="msg "+type;
+ box.textContent=text;
+ document.getElementById("chat").appendChild(box);
+}
+
+function save(){
+ localStorage.setItem("obie_history",JSON.stringify(history));
+ localStorage.setItem("obie_memory",memory);
+}
+
+async function send(){
+ const input=document.getElementById("input");
+ const text=input.value.trim();
+ if(!text)return;
+
+ history.push({role:"user",content:text});
+ save();
+
+ addMessage("user",text);
+ input.value="";
+
+ const box=document.createElement("div");
+ box.className="msg ai";
+ box.innerHTML='<span class="thinking-wheel"></span> Thinking...';
+ document.getElementById("chat").appendChild(box);
+ scroll();
+
+ try{
+  const response=await fetch("/api",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({
+    message:text,
+    history:history,
+    memory:memory
+   })
+  });
+
+  const reader=response.body.getReader();
+  const decoder=new TextDecoder();
+  let answer="";
+
+  while(true){
+    const {value,done}=await reader.read();
+    if(done) break;
+
+    const text=decoder.decode(value,{stream:true});
+
+    for(const line of text.split("\n")){
+      if(!line.trim()) continue;
+
+      try{
+        const chunk=JSON.parse(line);
+
+        if(chunk.message && chunk.message.content){
+          answer += chunk.message.content;
+          box.textContent=answer;
+          scroll();
+        }
+
+        if(chunk.done){
+          box.textContent=answer || "No response.";
+        }
+      }catch(e){}
+    }
+  }
+
+  if(!answer){
+    box.textContent="No response.";
+  }
+  history.push({role:"assistant",content:answer});
+  save();
+
+ }catch(e){
+  box.textContent="Connection error.";
+ }
+
+ scroll();
+}
+
+function scroll(){
+ const chat=document.getElementById("chat");
+ chat.scrollTop=chat.scrollHeight;
+}
+
+function newChat(){
+ history=[];
+ save();
+ render();
+}
+
+function clearChat(){
+ if(confirm("Clear this conversation?")){
+  history=[];
+  save();
+  render();
+ }
+}
+
+function openMemory(){
+ document.getElementById("memoryText").value=memory;
+ document.getElementById("memory").style.display="flex";
+}
+
+function closeMemory(){
+ document.getElementById("memory").style.display="none";
+}
+
+function saveMemory(){
+ memory=document.getElementById("memoryText").value;
+ save();
+ closeMemory();
+}
+
+document.getElementById("input").addEventListener("keydown",e=>{
+ if(e.key==="Enter"&&!e.shiftKey){
+  e.preventDefault();
+  send();
+ }
+});
+
+render();
+</script>
+
+
+<script>
+const OBIE_VERSION = document.querySelector('meta[name="obie-version"]')?.content || "0.0.0";
+
+async function checkForUpdates() {
+    try {
+        const response = await fetch("/version.json?t=" + Date.now());
+        if (!response.ok) return;
+
+        const latest = await response.json();
+
+        if (latest.version && latest.version !== OBIE_VERSION) {
+            showUpdateNotice(latest);
+        }
+    } catch (error) {
+        console.log("Update check unavailable");
+    }
+}
+
+function showUpdateNotice(update) {
+    if (document.getElementById("obie-update-notice")) return;
+
+    const notice = document.createElement("div");
+    notice.id = "obie-update-notice";
+
+    notice.innerHTML = `
+        <div style="
+            position:fixed;
+            right:20px;
+            bottom:20px;
+            width:320px;
+            padding:18px;
+            background:#17171b;
+            border:1px solid #38383f;
+            border-radius:16px;
+            box-shadow:0 15px 50px rgba(0,0,0,.45);
+            z-index:9999;
+            font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;
+        ">
+            <div style="font-size:16px;font-weight:700;margin-bottom:6px">
+                OBIE AI update available
+            </div>
+
+            <div style="font-size:13px;color:#9999a3;margin-bottom:14px">
+                Version ${update.version} is available.
+            </div>
+
+            <button onclick="this.parentElement.parentElement.remove()" style="
+                width:100%;
+                padding:10px;
+                border:0;
+                border-radius:10px;
+                background:#fff;
+                color:#000;
+                font-weight:700;
+                cursor:pointer;
+            ">
+                Update later
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(notice);
+}
+
+checkForUpdates();
+</script>
+
+</body>
+</html>
