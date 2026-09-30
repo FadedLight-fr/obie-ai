@@ -599,13 +599,8 @@ async function checkSetup() {
         const notice = document.createElement("div");
         notice.id = "obie-setup-notice";
 
-        let message = "OBIE AI needs a little setup before it can chat.";
-
-        if (!status.ollama) {
-            message = "Ollama is not running. Install Ollama and start it, then reopen OBIE AI.";
-        } else if (!status.model_ready) {
-            message = "The OBIE AI model is not installed yet.";
-        }
+        const ollamaMissing = !status.ollama;
+        const modelMissing = status.ollama && !status.model_ready;
 
         notice.innerHTML = `
             <div style="
@@ -619,32 +614,91 @@ async function checkSetup() {
                 font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;
             ">
                 <div style="
-                    width:min(420px,calc(100% - 40px));
-                    padding:26px;
+                    width:min(460px,calc(100% - 40px));
+                    padding:28px;
                     background:#17171b;
                     border:1px solid #38383f;
                     border-radius:20px;
                     box-shadow:0 20px 70px rgba(0,0,0,.55);
                 ">
-                    <div style="font-size:22px;font-weight:700;margin-bottom:10px">
+                    <div style="font-size:23px;font-weight:700;margin-bottom:10px">
                         OBIE AI setup
                     </div>
 
-                    <div style="font-size:14px;color:#aaa;margin-bottom:20px;line-height:1.5">
-                        ${message}
+                    <div style="font-size:14px;color:#aaa;margin-bottom:22px;line-height:1.5">
+                        ${ollamaMissing
+                            ? "OBIE AI needs Ollama to run its local AI model."
+                            : "Ollama is ready, but the OBIE AI model still needs to be installed."
+                        }
                     </div>
 
-                    <button onclick="this.closest('#obie-setup-notice').remove()" style="
+                    ${ollamaMissing ? `
+                        <button onclick="window.open('https://ollama.com/download/mac','_blank')" style="
+                            width:100%;
+                            padding:12px;
+                            margin-bottom:10px;
+                            border:0;
+                            border-radius:10px;
+                            background:#fff;
+                            color:#000;
+                            font-weight:700;
+                            cursor:pointer;
+                        ">
+                            Install Ollama
+                        </button>
+                    ` : `
+                        <div style="
+                            padding:13px;
+                            margin-bottom:12px;
+                            background:#101014;
+                            border:1px solid #303038;
+                            border-radius:10px;
+                            font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+                            font-size:13px;
+                            color:#ddd;
+                            word-break:break-all;
+                        ">
+                            ollama pull obie-ai
+                        </div>
+
+                        <button onclick="navigator.clipboard.writeText('ollama pull obie-ai')" style="
+                            width:100%;
+                            padding:12px;
+                            margin-bottom:10px;
+                            border:0;
+                            border-radius:10px;
+                            background:#fff;
+                            color:#000;
+                            font-weight:700;
+                            cursor:pointer;
+                        ">
+                            Copy install command
+                        </button>
+                    `}
+
+                    <button onclick="location.reload()" style="
                         width:100%;
                         padding:12px;
-                        border:0;
+                        margin-bottom:10px;
+                        border:1px solid #38383f;
                         border-radius:10px;
-                        background:#fff;
-                        color:#000;
+                        background:#222229;
+                        color:#fff;
                         font-weight:700;
                         cursor:pointer;
                     ">
-                        OK
+                        Check again
+                    </button>
+
+                    <button onclick="this.closest('#obie-setup-notice').remove()" style="
+                        width:100%;
+                        padding:10px;
+                        border:0;
+                        background:transparent;
+                        color:#888;
+                        cursor:pointer;
+                    ">
+                        Close
                     </button>
                 </div>
             </div>
@@ -655,7 +709,6 @@ async function checkSetup() {
         console.log("Setup check unavailable");
     }
 }
-
 checkSetup();
 </script>
 
