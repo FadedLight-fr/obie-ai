@@ -514,7 +514,7 @@ const OBIE_VERSION = document.querySelector('meta[name="obie-version"]')?.conten
 
 async function checkForUpdates() {
     try {
-        const response = await fetch("/version.json?t=" + Date.now());
+        const response = await fetch("https://raw.githubusercontent.com/FadedLight-fr/obie-ai/main/version.json?t=" + Date.now());
         if (!response.ok) return;
 
         const latest = await response.json();
