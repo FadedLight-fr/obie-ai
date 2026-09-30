@@ -586,6 +586,77 @@ function showUpdateNotice(update) {
 }
 
 checkForUpdates();
+
+async function checkSetup() {
+    try {
+        const response = await fetch("/api/status");
+        if (!response.ok) return;
+
+        const status = await response.json();
+
+        if (status.ollama && status.model_ready) return;
+
+        const notice = document.createElement("div");
+        notice.id = "obie-setup-notice";
+
+        let message = "OBIE AI needs a little setup before it can chat.";
+
+        if (!status.ollama) {
+            message = "Ollama is not running. Install Ollama and start it, then reopen OBIE AI.";
+        } else if (!status.model_ready) {
+            message = "The OBIE AI model is not installed yet.";
+        }
+
+        notice.innerHTML = `
+            <div style="
+                position:fixed;
+                inset:0;
+                background:rgba(0,0,0,.72);
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                z-index:10000;
+                font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;
+            ">
+                <div style="
+                    width:min(420px,calc(100% - 40px));
+                    padding:26px;
+                    background:#17171b;
+                    border:1px solid #38383f;
+                    border-radius:20px;
+                    box-shadow:0 20px 70px rgba(0,0,0,.55);
+                ">
+                    <div style="font-size:22px;font-weight:700;margin-bottom:10px">
+                        OBIE AI setup
+                    </div>
+
+                    <div style="font-size:14px;color:#aaa;margin-bottom:20px;line-height:1.5">
+                        ${message}
+                    </div>
+
+                    <button onclick="this.closest('#obie-setup-notice').remove()" style="
+                        width:100%;
+                        padding:12px;
+                        border:0;
+                        border-radius:10px;
+                        background:#fff;
+                        color:#000;
+                        font-weight:700;
+                        cursor:pointer;
+                    ">
+                        OK
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(notice);
+    } catch (error) {
+        console.log("Setup check unavailable");
+    }
+}
+
+checkSetup();
 </script>
 
 </body>
