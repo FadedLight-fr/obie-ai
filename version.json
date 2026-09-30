@@ -1,8 +1,10 @@
 {
-  "version": "1.0.1",
-  "download": "https://github.com/FadedLight-fr/obie-ai/releases/download/v1.0.1/OBIE-AI-1.0.1.zip",
+  "version": "1.0.2",
+  "download": "https://github.com/FadedLight-fr/obie-ai/releases/download/v1.0.2/OBIE-AI-1.0.2.zip",
   "notes": [
-    "Update system connected",
-    "Improved stability"
+    "Portable macOS app bundle",
+    "Persistent per-user memory",
+    "Improved memory detection",
+    "Improved app launcher"
   ]
 }
