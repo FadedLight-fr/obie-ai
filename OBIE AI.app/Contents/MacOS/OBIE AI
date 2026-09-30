@@ -1,9 +1,17 @@
 #!/bin/bash
 
-SERVER="/Users/obiegrainger/ObieAI/app/OBIE AI.app/Contents/Resources/obie/server.py"
+APP_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+APP_DIR="$APP_ROOT/Resources/obie"
+SERVER="$APP_DIR/server.py"
 
 python3 "$SERVER" &
 SERVER_PID=$!
+
+cleanup() {
+    kill "$SERVER_PID" 2>/dev/null
+    wait "$SERVER_PID" 2>/dev/null
+}
+trap cleanup EXIT INT TERM
 
 sleep 1
 open "http://127.0.0.1:8000"
